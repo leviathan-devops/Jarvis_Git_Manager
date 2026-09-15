@@ -11,7 +11,11 @@ function argVal(args: string[], ...names: string[]): string | undefined {
   for (let i = 0; i < args.length; i++) {
     const a = args[i];
     for (const n of names) {
-      if (a === n) return args[i + 1];
+      if (a === n) {
+        const v = args[i + 1];
+        if (v === undefined || v.startsWith("--")) return undefined;
+        return v;
+      }
       if (a.startsWith(n + "=")) return a.slice(n.length + 1);
     }
   }
@@ -26,7 +30,12 @@ function norm(p: string): string {
 function toplevelOf(cwd: string): string | null {
   const r = spawnSync("git", ["-C", cwd, "rev-parse", "--show-toplevel"], {
     encoding: "utf8",
+    timeout: 15000,
   });
+  if ((r as { error?: unknown }).error) {
+    process.stderr.write(`spawn-worker: git failed to run: ${String((r as { error?: unknown }).error)}\n`);
+    process.exit(1);
+  }
   if (r.status !== 0) return null;
   const out = typeof r.stdout === "string" ? r.stdout.trim() : "";
   return out ? norm(out) : null;

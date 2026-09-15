@@ -1,7 +1,7 @@
 {
  "harness": "st-jgm",
  "mode": "B",
- "generatedAt": "2026-09-15T17:15:31.548Z",
+ "generatedAt": "2026-09-15T17:48:05.707Z",
  "jgmDir": "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager",
  "total": 19,
  "pass": 19,
@@ -54,7 +54,7 @@
    "name": "HEALTH-SHA-WORKER",
    "status": "PASS",
    "exit": 0,
-   "detail": "live worker sha f8d9dca present=true"
+   "detail": "live worker sha 03db087 present=true"
   },
   {
    "name": "HEALTH-SHA-GROK",
@@ -72,7 +72,7 @@
    "name": "PLAN-CLEAN-NEW",
    "status": "PASS",
    "exit": 0,
-   "detail": "e=0 previewId=preview-20260915T171531 file=preview-20260915T171531.json bytes=1230 added=1 overwrittenExisting=false"
+   "detail": "e=0 previewId=preview-20260915T174805 file=preview-20260915T174805.json bytes=1230 added=1 overwrittenExisting=false"
   },
   {
    "name": "STATUS-TOPLEVEL",
@@ -111,10 +111,10 @@
    "detail": "e=2 token=UNOWNED-PATH present=true created=false"
   },
   {
-   "name": "WT-ABSENT",
+   "name": "WT-PRESENT",
    "status": "PASS",
-   "exit": 1,
-   "detail": "which wt e=1: binary absent (expected; delegation code only)"
+   "exit": 0,
+   "detail": "which wt e=0 at /home/leviathan/.cargo/bin/wt; wt list e=0 shows-main=true"
   },
   {
    "name": "KNOWN-BAD",
@@ -131,15 +131,15 @@
   "total": 10
  },
  "liveShas": {
-  "worker": "f8d9dca",
+  "worker": "03db087",
   "grok": "61f9ee3"
  },
  "preview": {
-  "id": "preview-20260915T171531",
-  "file": "/home/leviathan/.omp/git-manager/preview-20260915T171531.json",
+  "id": "preview-20260915T174805",
+  "file": "/home/leviathan/.omp/git-manager/preview-20260915T174805.json",
   "bytes": 1230
  },
  "wt": {
-  "present": false
+  "present": true
  }
 }

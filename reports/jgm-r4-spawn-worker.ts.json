@@ -1,0 +1,64 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 4,
+    "total_tokens": 33277,
+    "input_tokens": 18697,
+    "output_tokens": 14580,
+    "elapsed": "4m16s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/spawn-worker.ts",
+      "content": "**`argVal` accepts flags as values**: When the matched flag is the last arg or is followed by another flag (e.g. `--cwd --product plutus`), it returns `args[i + 1]` without checking, yielding `\"--product\"` as the cwd. Guard against `undefined` and against values that start with `--` (which would indicate a missing value).",
+      "existing_code": "    if (a === n) return args[i + 1];\n      if (a.startsWith(n + \"=\")) return a.slice(n.length + 1);",
+      "start_line": 14,
+      "end_line": 15,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/spawn-worker.ts",
+      "content": "**`toplevelOf` ignores `r.error` (spawn failure)**: If `git` is missing or fails to spawn, `r.status` is `null` and `r.error` holds the real reason. Returning `null` here silently disables the HOME-LEAK and PUFFER-PARENT guards. Inspect `r.error` and write it to stderr (or treat as a hard failure) so the security checks cannot be bypassed.",
+      "existing_code": "  if (r.status !== 0) return null;",
+      "start_line": 30,
+      "end_line": 30,
+      "category": "security",
+      "severity": "high"
+    },
+    {
+      "path": "src/spawn-worker.ts",
+      "content": "`run` is declared `async` but contains no `await` and calls only synchronous APIs (`spawnSync`, `process.exit`, `refuse`). Remove the `async`/Promise wrapper, or use `spawn` with `await` if true async behavior is intended. Keeping `async` misleads callers about concurrency semantics.",
+      "existing_code": "export async function run(args: string[]): Promise\u003cvoid\u003e {",
+      "start_line": 35,
+      "end_line": 35,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/spawn-worker.ts",
+      "content": "**`spawnSync` has no timeout**: A hung git invocation (e.g. on a stuck NFS mount) would block the process indefinitely. Pass a `timeout` option to `spawnSync` so the dry-run plan cannot hang forever.",
+      "existing_code": "  const r = spawnSync(\"git\", [\"-C\", cwd, \"rev-parse\", \"--show-toplevel\"], {",
+      "start_line": 27,
+      "end_line": 27,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "session_id": "61dc5578-3b90-466d-b55c-fb1a7c85e966"
+}

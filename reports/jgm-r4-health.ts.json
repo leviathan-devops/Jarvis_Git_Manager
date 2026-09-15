@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 39022,
+    "input_tokens": 30293,
+    "output_tokens": 8729,
+    "cache_read_tokens": 7392,
+    "elapsed": "3m24s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_comment": 1,
+      "file_find": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/health.ts",
+      "content": "The loop over `sources` performs `await runGit(...)` for each independent repo root (SHELL, PLUTUS/agent, Graph_Intelligence) sequentially. Because `runGit` is genuinely async (it spawns a child process and awaits `Promise.all` of stdout/stderr/exited), the three independent git probe invocations could be parallelized with `Promise.all` for better throughput. Additionally, within each iteration, the `rev-parse --show-toplevel` and `worktree list --porcelain` calls are independent and could also be issued in parallel. As written, each source waits for both awaits to finish before the next source begins, forfeiting concurrency. Consider mapping sources to a probe promise and awaiting `Promise.all`, with null filtering for failures.",
+      "suggestion_code": "  const probeResults = await Promise.all(\n    sources.map(async (src) =\u003e {\n      let toplevel: string;\n      try {\n        toplevel = normPath((await runGit(src, \"rev-parse\", \"--show-toplevel\")).trim());\n      } catch {\n        return null;\n      }\n      let list: string;\n      try {\n        [toplevel, list] = await Promise.all([\n          Promise.resolve(toplevel),\n          runGit(src, \"worktree\", \"list\", \"--porcelain\"),\n        ]);\n      } catch {\n        return null;\n      }\n      return { toplevel, entries: parseWorktreePorcelain(list) };\n    }),\n  );\n  for (const r of probeResults) {\n    if (!r) continue;\n    toplevels.add(r.toplevel);\n    for (const w of r.entries) {\n      entries.push({ toplevel: r.toplevel, path: w.path, branch: w.branch, head: w.head });\n    }\n  }",
+      "existing_code": "  for (const src of sources) {\n    let toplevel: string;\n    try {\n      toplevel = normPath((await runGit(src, \"rev-parse\", \"--show-toplevel\")).trim());\n    } catch {\n      continue;\n    }\n    toplevels.add(toplevel);\n    let list: string;\n    try {\n      list = await runGit(src, \"worktree\", \"list\", \"--porcelain\");\n    } catch {\n      continue;\n    }\n    for (const w of parseWorktreePorcelain(list)) {\n      entries.push({ toplevel, path: w.path, branch: w.branch, head: w.head });\n    }\n  }",
+      "start_line": 71,
+      "end_line": 88,
+      "category": "performance",
+      "severity": "medium"
+    }
+  ],
+  "session_id": "1c7f5cef-f09b-4050-a93b-052cd8f25ba7"
+}

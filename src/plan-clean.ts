@@ -36,17 +36,18 @@ export async function run(_args: string[]): Promise<void> {
       action: "relocate",
       target: w.path,
       dest,
-      reason: `wrapper-hosted keep-live worker (branch ${w.branch}) belongs under PLUTUS/agent/.worktrees`,
+      reason: `wrapper-hosted keep-live worker (branch ${w.branch ?? "unknown"}) belongs under PLUTUS/agent/.worktrees`,
     });
   }
 
   // Optional: drop leftover wrappers that are NOT keep-live. Preview only.
   for (const w of health.worktrees) {
     if (w.class !== "leftover" || !underWt(w.path)) continue;
+    if (!existsSync(w.path)) continue;
     ops.push({
       action: "drop-wrapper",
       target: w.path,
-      reason: `leftover wrapper (branch ${w.branch}), not keep-live`,
+      reason: `leftover wrapper (branch ${w.branch ?? "unknown"}), not keep-live`,
     });
   }
 

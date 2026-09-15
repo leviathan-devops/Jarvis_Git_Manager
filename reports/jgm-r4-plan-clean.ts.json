@@ -1,0 +1,57 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 13761,
+    "input_tokens": 8447,
+    "output_tokens": 5314,
+    "elapsed": "1m43s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "code_comment": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/plan-clean.ts",
+      "content": "Missing error handling in the async 'run' function. Per async handling standards, async functions must include proper error handling with user-friendly error messages. If 'collectHealth()' throws (e.g., git failure, missing repository), or if mkdirSync/writeFileSync fail, the unhandled rejection could crash the process without any user-friendly diagnostic. Wrap the body in a try/catch and emit a meaningful error message to stderr.",
+      "suggestion_code": "export async function run(_args: string[]): Promise\u003cvoid\u003e {\n  let health: HealthResult;\n  try {\n    health = await collectHealth();\n  } catch (err) {\n    const msg = err instanceof Error ? err.message : String(err);\n    process.stderr.write(`plan-clean: failed to collect worktree health: ${msg}\\n`);\n    process.exitCode = 1;\n    return;\n  }\n  const ops: PreviewOp[] = [];",
+      "existing_code": "export async function run(_args: string[]): Promise\u003cvoid\u003e {\n  const health = await collectHealth();\n  const ops: PreviewOp[] = [];",
+      "start_line": 19,
+      "end_line": 21,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/plan-clean.ts",
+      "content": "The 'drop-wrapper' loop does not check existsSync(w.path) before proposing the action, unlike the 'relocate' loop which explicitly guards with 'LIVE WINS: only propose when the target path exists on disk right now'. If a leftover wrapper path no longer exists on disk, proposing a 'drop-wrapper' action is misleading and inconsistent. Add the same existsSync guard for parity.",
+      "suggestion_code": "  // Optional: drop leftover wrappers that are NOT keep-live. Preview only.\n  for (const w of health.worktrees) {\n    if (w.class !== \"leftover\" || !underWt(w.path)) continue;\n    if (!existsSync(w.path)) continue;\n    ops.push({\n      action: \"drop-wrapper\",\n      target: w.path,\n      reason: `leftover wrapper (branch ${w.branch ?? \"unknown\"}), not keep-live`,\n    });",
+      "existing_code": "  // Optional: drop leftover wrappers that are NOT keep-live. Preview only.\n  for (const w of health.worktrees) {\n    if (w.class !== \"leftover\" || !underWt(w.path)) continue;\n    ops.push({\n      action: \"drop-wrapper\",\n      target: w.path,\n      reason: `leftover wrapper (branch ${w.branch}), not keep-live`,\n    });",
+      "start_line": 43,
+      "end_line": 50,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "src/plan-clean.ts",
+      "content": "The reason strings interpolate w.branch directly (e.g., '(branch ${w.branch})'), but w.branch can be null/undefined or 'detached' (as evidenced by the guard in the relocate loop). This would render 'branch undefined' or 'branch null' in the preview output, which is confusing. Use a fallback such as 'w.branch ?? \"unknown\"' for a cleaner preview.",
+      "suggestion_code": "      reason: `wrapper-hosted keep-live worker (branch ${w.branch ?? \"unknown\"}) belongs under PLUTUS/agent/.worktrees`,",
+      "existing_code": "      reason: `wrapper-hosted keep-live worker (branch ${w.branch}) belongs under PLUTUS/agent/.worktrees`,",
+      "start_line": 39,
+      "end_line": 39,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "session_id": "cec83641-6319-410e-bf54-0ba77930d622"
+}

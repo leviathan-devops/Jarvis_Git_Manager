@@ -368,15 +368,17 @@ async function main(): Promise<void> {
     `e=${pr.code} token=UNOWNED-PATH present=${pr.err.includes("UNOWNED-PATH")} created=${existsSync(docsDir)}`,
   );
 
-  // 18. wt binary absent (expected: delegation code only, no live wt).
+  // 18. wt binary present (worktrunk installed 2026-09-15) + smoke wt list on this repo (read-only).
   const w = spawnBin("which", ["wt"]);
+  const wl = spawnBin("wt", ["list"]);
+  const wtOk = w.code === 0 && wl.code === 0 && wl.out.includes("main");
   rec(
-    "WT-ABSENT",
-    w.code !== 0,
+    "WT-PRESENT",
+    wtOk,
     w.code,
-    w.code !== 0
-      ? `which wt e=${w.code}: binary absent (expected; delegation code only)`
-      : `which wt e=0: unexpectedly present at ${w.out.trim().slice(0, 120)}`,
+    w.code === 0
+      ? `which wt e=0 at ${w.out.trim().slice(0, 80)}; wt list e=${wl.code} shows-main=${wl.out.includes("main")}`
+      : `which wt e=${w.code}: binary absent (expected; delegation code only)`,
   );
 
   // 19. test-known-bad 4/4.
