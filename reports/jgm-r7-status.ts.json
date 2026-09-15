@@ -1,0 +1,55 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 36732,
+    "input_tokens": 22639,
+    "output_tokens": 14093,
+    "elapsed": "4m27s"
+  },
+  "tool_calls": {
+    "total": 4,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 3
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/status.ts",
+      "content": "(bug) `cwdArg` silently swallows a malformed `--cwd` provided as the last argument: when `a === \"--cwd\"` but it's the final token, the `i + 1 \u003c args.length` guard fails and the loop simply falls through, ultimately returning `normPath(process.cwd())`. The caller (and user) gets a quiet, incorrect directory selection instead of an error. Reject the dangling flag, e.g. throw `fail(\"--cwd requires a value\")`.",
+      "existing_code": "    if (a === \"--cwd\" \u0026\u0026 i + 1 \u003c args.length) return normPath(args[i + 1]);\n    if (a.startsWith(\"--cwd=\")) return normPath(a.slice(\"--cwd=\".length));",
+      "start_line": 18,
+      "end_line": 19,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "src/status.ts",
+      "content": "(maintainability) `rev` is declared as `let` and assigned inside a `try`, then read via `rev!` after the catch block. While `fail` is typed `never` and does let TS narrow the post-catch state, the non-null assertion `rev!` is a code smell that signals the control flow is hard to follow for readers/tools. Consider declaring `rev` with a definite type via an early-return pattern: `const rev = await runGit(...).catch(…)` or hoisting the parse into the try so the value is only used within the block where it's proven initialized. This reduces reliance on `!` and makes the never-narrowing assumption explicit.",
+      "existing_code": "  let rev: string;\n  try {\n    rev = await runGit(\n      cwd,\n      \"rev-parse\",\n      \"--show-toplevel\",\n      \"--git-common-dir\",\n      \"--abbrev-ref\",\n      \"HEAD\",\n      \"--short\",\n      \"HEAD\",\n    );\n  } catch (e) {\n    fail(e instanceof Error ? e.message : String(e));\n  }\n  const lines = rev!\n    .split(\"\\n\")",
+      "start_line": 65,
+      "end_line": 81,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/status.ts",
+      "content": "(maintainability) The branch-detection in `parseWorktreePorcelain` cannot distinguish \"no branch line emitted\" from \"empty branch\" — both yield `branch: \"\"`. `StatusWorktree.branch` is typed as a required `string`, yet git emits no `branch ` line for worktrees in a no-branch/no-detached state (blank worktree). This produces semantically ambiguous output. Either widen the type to `branch?: string` or normalize the missing case explicitly (e.g. default `branch = \"(no branch)\"`), mirroring `git worktree list`'s own rendering, so consumers don't conflate detached/blank with empty-string.",
+      "existing_code": "    let path = \"\";\n    let branch = \"\";\n    let head = \"\";\n    for (const line of block.split(\"\\n\")) {\n      if (line.startsWith(\"worktree \")) path = line.slice(\"worktree \".length).trim();\n      else if (line.startsWith(\"HEAD \")) head = line.slice(\"HEAD \".length).trim();\n      else if (line.startsWith(\"branch \")) {\n        branch = line.slice(\"branch \".length).trim().replace(/^refs\\/heads\\//, \"\");\n      } else if (line.trim() === \"detached\") branch = \"detached\";\n    }",
+      "start_line": 43,
+      "end_line": 52,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "session_id": "ad6933b4-5a29-4a7b-b759-4b628e420bba"
+}
