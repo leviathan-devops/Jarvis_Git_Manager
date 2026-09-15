@@ -10,6 +10,7 @@ const MODULES: Record<string, string> = {
   "ignore-shell": "./ignore-shell.ts",
   "spawn-worker": "./spawn-worker.ts",
   "bind": "./bind.ts",
+  "execute": "./preview.ts",
   "provision": "./provision.ts",
   "test-known-bad": "./test-known-bad.ts",
 };

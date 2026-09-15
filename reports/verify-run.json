@@ -1,1 +1,141 @@
-{"harness":"st-jgm","mode":"B","generatedAt":"2026-09-15T16:32:03.253Z","jgmDir":"/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager","total":19,"pass":19,"fail":0,"exit":0,"rows":[{"name":"HOME-LEAK","status":"PASS","exit":2,"detail":"e=2 token=HOME-LEAK present=true stderr=HOME-LEAK: cwd /home/leviathan resolves to HOME repo /home/leviathan"},{"name":"PUFFER-PARENT","status":"PASS","exit":2,"detail":"e=2 token=PUFFER-PARENT present=true stderr=PUFFER-PARENT: cwd toplevel is SHELL (/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace) for product=plutus; spawn from "},{"name":"LIVE-WORKER","status":"PASS","exit":2,"detail":"e=2 token=LIVE-WORKER present=true isKeepLive(grok)=true keepPaths=5"},{"name":"STALE-PREVIEW","status":"PASS","exit":2,"detail":"e=2 token=STALE-PREVIEW present=true gateParser=no-such-id"},{"name":"HEALTH-EXIT0","status":"PASS","exit":0,"detail":"e=0 worktrees=10"},{"name":"HEALTH-KEEP3","status":"PASS","exit":0,"detail":"keep-live=5 (bar >=3)"},{"name":"HEALTH-WRAP1","status":"PASS","exit":0,"detail":"wrapper=1 (bar >=1) leftover=3 product=1"},{"name":"HEALTH-SHA-WORKER","status":"PASS","exit":0,"detail":"live worker sha ed4533d present=true"},{"name":"HEALTH-SHA-GROK","status":"PASS","exit":0,"detail":"live grok sha 61f9ee3 present=true"},{"name":"HEALTH-DIRECT","status":"PASS","exit":null,"detail":"direct keep-live=5 cli keep-live=5 direct total=10 classify(grok)=keep-live"},{"name":"PLAN-CLEAN-NEW","status":"PASS","exit":0,"detail":"e=0 previewId=preview-20260915T163203 file=preview-20260915T163203.json bytes=1230 added=1 overwrittenExisting=false"},{"name":"STATUS-TOPLEVEL","status":"PASS","exit":0,"detail":"e=0 toplevel=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent branch=plutus/main"},{"name":"BIND-MOVE","status":"PASS","exit":0,"detail":"e=0 move=/move /home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent contains-/move-space=true"},{"name":"SPAWN-DRY","status":"PASS","exit":0,"detail":"e=0 dry=true mutate=false cwd=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager"},{"name":"IGNORE-DRY","status":"PASS","exit":0,"detail":"e=0 dry=true gitignoreUnchanged=true wouldAppendSubsetOfIGNORE_LINES=true"},{"name":"PROVISION-DOTDIR","status":"PASS","exit":2,"detail":"e=2 token=UNOWNED-PATH present=true created=false"},{"name":"PROVISION-DOCS","status":"PASS","exit":2,"detail":"e=2 token=UNOWNED-PATH present=true created=false"},{"name":"WT-ABSENT","status":"PASS","exit":1,"detail":"which wt e=1: binary absent (expected; delegation code only)"},{"name":"KNOWN-BAD","status":"PASS","exit":0,"detail":"e=0 pass=4/4 fail=0 cases=home-leak:pass,puffer-parent:pass,live-worker:pass,stale-preview:pass"}],"health":{"keepLive":5,"wrapper":1,"leftover":3,"product":1,"total":10},"liveShas":{"worker":"ed4533d","grok":"61f9ee3"},"preview":{"id":"preview-20260915T163203","file":"/home/leviathan/.omp/git-manager/preview-20260915T163203.json","bytes":1230},"wt":{"present":false}}
+{
+ "harness": "st-jgm",
+ "mode": "B",
+ "generatedAt": "2026-09-15T17:15:20.042Z",
+ "jgmDir": "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager",
+ "total": 19,
+ "pass": 18,
+ "fail": 1,
+ "exit": 1,
+ "rows": [
+  {
+   "name": "HOME-LEAK",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=HOME-LEAK present=true stderr=HOME-LEAK: cwd /home/leviathan resolves to HOME repo /home/leviathan"
+  },
+  {
+   "name": "PUFFER-PARENT",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=PUFFER-PARENT present=true stderr=PUFFER-PARENT: cwd toplevel is SHELL (/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace) for product=plutus; spawn from "
+  },
+  {
+   "name": "LIVE-WORKER",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=LIVE-WORKER present=true isKeepLive(grok)=true keepPaths=5"
+  },
+  {
+   "name": "STALE-PREVIEW",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=STALE-PREVIEW present=true gateParser=no-such-id"
+  },
+  {
+   "name": "HEALTH-EXIT0",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 worktrees=10"
+  },
+  {
+   "name": "HEALTH-KEEP3",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "keep-live=5 (bar >=3)"
+  },
+  {
+   "name": "HEALTH-WRAP1",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "wrapper=1 (bar >=1) leftover=3 product=1"
+  },
+  {
+   "name": "HEALTH-SHA-WORKER",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "live worker sha f8d9dca present=true"
+  },
+  {
+   "name": "HEALTH-SHA-GROK",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "live grok sha 61f9ee3 present=true"
+  },
+  {
+   "name": "HEALTH-DIRECT",
+   "status": "PASS",
+   "exit": null,
+   "detail": "direct keep-live=5 cli keep-live=5 direct total=10 classify(grok)=keep-live"
+  },
+  {
+   "name": "PLAN-CLEAN-NEW",
+   "status": "FAIL",
+   "exit": 0,
+   "detail": "e=0 previewId=preview-20260915T171519 file=none bytes=0 added=0 overwrittenExisting=true"
+  },
+  {
+   "name": "STATUS-TOPLEVEL",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 toplevel=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent branch=plutus/main"
+  },
+  {
+   "name": "BIND-MOVE",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 move=/move /home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent contains-/move-space=true"
+  },
+  {
+   "name": "SPAWN-DRY",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 dry=true mutate=false cwd=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager"
+  },
+  {
+   "name": "IGNORE-DRY",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 dry=true gitignoreUnchanged=true wouldAppendSubsetOfIGNORE_LINES=true"
+  },
+  {
+   "name": "PROVISION-DOTDIR",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=UNOWNED-PATH present=true created=false"
+  },
+  {
+   "name": "PROVISION-DOCS",
+   "status": "PASS",
+   "exit": 2,
+   "detail": "e=2 token=UNOWNED-PATH present=true created=false"
+  },
+  {
+   "name": "WT-ABSENT",
+   "status": "PASS",
+   "exit": 1,
+   "detail": "which wt e=1: binary absent (expected; delegation code only)"
+  },
+  {
+   "name": "KNOWN-BAD",
+   "status": "PASS",
+   "exit": 0,
+   "detail": "e=0 pass=4/4 fail=0 cases=home-leak:pass,puffer-parent:pass,live-worker:pass,stale-preview:pass"
+  }
+ ],
+ "health": {
+  "keepLive": 5,
+  "wrapper": 1,
+  "leftover": 3,
+  "product": 1,
+  "total": 10
+ },
+ "liveShas": {
+  "worker": "f8d9dca",
+  "grok": "61f9ee3"
+ },
+ "preview": null,
+ "wt": {
+  "present": false
+ }
+}

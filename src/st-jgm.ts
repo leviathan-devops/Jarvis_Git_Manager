@@ -25,7 +25,13 @@ const JGM_DIR = normPath(join(import.meta.dir, ".."));
 const SELF = join(import.meta.dir, "..", "src", "git-manager.ts");
 const PROV = join(import.meta.dir, "..", "src", "provision.ts");
 const GROK = join(PLUTUS_AGENT, ".worktrees", "grok-prototype");
-const WORKER_SHORT = "ac32ded";
+const WORKER_SHORT = (() => {
+  try {
+    const r = Bun.spawnSync(["git", "-C", "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent", "rev-parse", "--short", "omp-worker-1"], { stdout: "pipe" });
+    const s = String(r.stdout || "").trim();
+    return s || "ac32ded";
+  } catch { return "ac32ded"; }
+})();
 const GROK_SHORT = "61f9ee3";
 
 interface Row {
