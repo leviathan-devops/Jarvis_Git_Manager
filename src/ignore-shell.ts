@@ -1,7 +1,10 @@
-// Jarvis Git Manager — shell .gitignore plan (W3 cleanup owns this file).
+// Jarvis Git Manager — shell .gitignore plan (W4 shell buffer).
 // ALWAYS dry: prints the would-append lines, never writes .gitignore,
 // even with --approved. Read-only (may read the existing file to diff).
+// Stdout: one JSON object with dry:true + sha256 of the existing file.
+// Stderr: human. Exit 0 pass.
 
+import { createHash } from "node:crypto";
 import { SHELL } from "./keep-table.ts";
 
 export const SHELL_GITIGNORE = `${SHELL}/.gitignore`;
@@ -14,6 +17,7 @@ export const IGNORE_LINES = [
   "Dragon_Shell/",
   "circuit/",
   "GM_Cards/",
+  "Jarvis_Git_Manager/",
 ];
 
 export async function run(args: string[]): Promise<void> {
@@ -36,6 +40,7 @@ export async function run(args: string[]): Promise<void> {
     process.stderr.write(`would append to ${SHELL_GITIGNORE}: ${l}\n`);
   }
   process.stderr.write(`ignore-shell: dry run, ${SHELL_GITIGNORE} not written\n`);
+  const sha = createHash("sha256").update(existing, "utf8").digest("hex");
   console.log(
     JSON.stringify({
       action: "ignore-shell",
@@ -43,6 +48,7 @@ export async function run(args: string[]): Promise<void> {
       file: SHELL_GITIGNORE,
       wouldAppend,
       alreadyPresent,
+      sha,
     }),
   );
 }

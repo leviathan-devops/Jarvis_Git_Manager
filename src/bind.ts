@@ -16,6 +16,10 @@ function argVal(args: string[], ...names: string[]): string | undefined {
 
 function gitOut(dir: string, gitArgs: string[]): string | null {
   const r = spawnSync("git", ["-C", dir, ...gitArgs], { encoding: "utf8" });
+  if (r.error) {
+    process.stderr.write(`bind: git failed to run: ${String((r as { error?: unknown }).error)}\n`);
+    process.exit(1);
+  }
   if (r.status !== 0) return null;
   const out = typeof r.stdout === "string" ? r.stdout.trim() : "";
   return out ? out : null;
@@ -27,8 +31,8 @@ export async function run(args: string[]): Promise<void> {
     process.stderr.write("bind: --dir <abs-path> is required\n");
     process.exit(1);
   }
-  if (!dir.startsWith("/")) {
-    process.stderr.write(`bind: --dir must be absolute, got: ${dir}\n`);
+  if (!dir.startsWith("/") || dir.startsWith("-") || dir.includes("\n") || dir.includes("\0")) {
+    process.stderr.write(`bind: --dir must be an absolute path (no flags/control chars), got: ${dir}\n`);
     process.exit(1);
   }
   const toplevel = gitOut(dir, ["rev-parse", "--show-toplevel"]);

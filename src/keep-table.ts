@@ -16,8 +16,7 @@ export const KEEP_PATHS: string[] = [
 
 export function isKeepLive(absPath: string): boolean {
   if (!absPath.startsWith("/")) return false;
-  const norm =
-    absPath.length > 1 && absPath.endsWith("/") ? absPath.slice(0, -1) : absPath;
+  const norm = absPath.length > 1 ? absPath.replace(/\/+$/, "") || "/" : absPath;
   for (const keep of KEEP_PATHS) {
     if (norm === keep || norm.startsWith(keep + "/")) return true;
   }

@@ -57,7 +57,11 @@ export async function run(args: string[]): Promise<void> {
     );
   }
 
-  // Dry-only: never `git worktree add` in this wave.
+  // Delegation (W2): after the dry plan above, the real worker spawn is
+  // `wt switch -c -x omp <branch>` run from the PRODUCT repo cwd (never from
+  // SHELL — see PUFFER-PARENT refuse above). See wt.ts wtSwitchCreate().
+  // Still dry-only this wave: no `git worktree add`, no `wt switch` mutating
+  // live trees — mutating smoke runs only on a THROWAWAY repo (see wave log).
   const plan = {
     action: "spawn-worker",
     cwd,
@@ -65,6 +69,7 @@ export async function run(args: string[]): Promise<void> {
     product,
     dry: true,
     mutate: false,
+    spawn: "wt switch -c -x omp <branch>",
     message:
       "dry-run only: git worktree add disabled in this wave; re-run from a product repo cwd",
   };

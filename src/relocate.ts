@@ -54,11 +54,14 @@ export async function run(args: string[]): Promise<void> {
   }
 
   if (a.includes("--dry") || !approved || process.env.JGM_ALLOW_MUTATE !== "1") {
-    const why = a.includes("--dry")
-      ? "explicit --dry"
-      : !approved
-        ? "no --approved <preview-id>; default dry"
-        : "JGM_ALLOW_MUTATE!=1; operator approval not present this wave";
+    let why: string;
+    if (a.includes("--dry")) {
+      why = "explicit --dry";
+    } else if (!approved) {
+      why = "no --approved <preview-id>; default dry";
+    } else {
+      why = "JGM_ALLOW_MUTATE!=1; operator approval not present this wave";
+    }
     process.stderr.write(`relocate (dry): ${src} -> ${dest} (${why})\n`);
     console.log(
       JSON.stringify({
@@ -66,7 +69,6 @@ export async function run(args: string[]): Promise<void> {
         dry: true,
         source: src,
         dest,
-        destination: dest,
         sourceExists: existsSync(src),
         destExists: existsSync(dest),
         previewId: approved ?? null,

@@ -1,0 +1,40 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 20771,
+    "input_tokens": 10268,
+    "output_tokens": 10503,
+    "cache_read_tokens": 3072,
+    "elapsed": "3m28s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "refuse.ts",
+      "content": "The function relies on the Node.js global `process` (process.stderr.write / process.exit). This file appears to live in a project that does NOT otherwise use `process` (no matches across *.ts files), and the file is positioned as a pure helper. Relying on an ambient Node `process` global without importing it (e.g. from '@std/process') or declaring the dependency is fragile: under stricter TS configs or non-Node targets (e.g. Deno, browser, edge) this will fail to compile or runtime. Import the dependency explicitly (e.g. `import { stderr, exit } from \"@std/process\";`) or, if this is intentionally Node-only, document/guard it so the dependency is explicit.",
+      "suggestion_code": "import { stderr, exit } from \"@std/process\";\nexport function refuse(token: Token, message: string): never {\n  stderr.write(`${token}: ${message}\\n`);\n  exit(2);\n}",
+      "existing_code": "export function refuse(token: Token, message: string): never {\n  process.stderr.write(`${token}: ${message}\\n`);\n  process.exit(2);\n}",
+      "start_line": 7,
+      "end_line": 10,
+      "category": "maintainability",
+      "severity": "high"
+    }
+  ],
+  "session_id": "12724d89-193e-4fe3-86d2-cbf6388b88c0"
+}

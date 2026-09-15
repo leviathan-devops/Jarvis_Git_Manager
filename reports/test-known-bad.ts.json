@@ -1,0 +1,56 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 22228,
+    "input_tokens": 13139,
+    "output_tokens": 9089,
+    "cache_read_tokens": 4928,
+    "elapsed": "3m0s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "test-known-bad.ts",
+      "content": "The `spawnSelf` function calls `Bun.spawn` without any error handling. If the spawn fails (e.g., `bun` is not installed, the executable `SELF` does not exist, or the process crashes unexpectedly), this will throw an unhandled rejection that could crash the entire test runner. Per async handling standards, async functions must include proper error handling. Consider wrapping the spawn and Promise.all in a try/catch or handling the rejection so failures are reported gracefully rather than crashing.",
+      "existing_code": "async function spawnSelf(argv: string[]): Promise\u003c{ code: number; out: string; err: string }\u003e {\n  const proc = Bun.spawn([\"bun\", SELF, ...argv], { stdout: \"pipe\", stderr: \"pipe\" });\n  const [out, err, code] = await Promise.all([\n    new Response(proc.stdout).text(),\n    new Response(proc.stderr).text(),\n    proc.exited,\n  ]);\n  return { code, out, err };\n}",
+      "start_line": 19,
+      "end_line": 27,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "test-known-bad.ts",
+      "content": "The `run` function is declared to return `Promise\u003cvoid\u003e`, but on non-zero exit it calls `process.exit(...)` which terminates the process. There is no try/catch around the body of `run`, so if any `expectRefuse` call throws or rejects (e.g., from an uncaught rejection in `spawnSelf`), the error is unobserved and the process exits abnormally without emitting the final JSON summary. Consider wrapping the fixture execution in a try/catch to ensure the JSON result line is always emitted and failures are reported rather than swallowed.",
+      "existing_code": "export async function run(_args: string[]): Promise\u003cvoid\u003e {\n  const results: CaseResult[] = [];\n\n  async function expectRefuse(name: string, argv: string[], token: string): Promise\u003cvoid\u003e {",
+      "start_line": 29,
+      "end_line": 32,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "test-known-bad.ts",
+      "content": "The `out` field from the `spawnSelf` return value is captured but never used anywhere in the code (only `code` and `err` are referenced in `expectRefuse`). While this is a minor issue and may be intentional for future debugging, it is at least partially unused. Consider removing the unused `out` from the destructuring and return type to keep the interface clean, or explicitly note its intended use.",
+      "existing_code": "const r = await spawnSelf(argv);\n    if (r.code === 2 \u0026\u0026 r.err.includes(token)) {",
+      "start_line": 33,
+      "end_line": 34,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "session_id": "33ebf548-25e2-4787-afb1-4fd04195c2b4"
+}

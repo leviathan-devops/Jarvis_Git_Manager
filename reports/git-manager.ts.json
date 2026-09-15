@@ -1,0 +1,57 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 3,
+    "total_tokens": 10599,
+    "input_tokens": 7453,
+    "output_tokens": 3146,
+    "elapsed": "1m7s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "code_comment": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "git-manager.ts",
+      "content": "The file header documents the exit-code contract: \"Exit 0 pass, 1 fail, 2 refuse.\" An unknown/unrecognized action is a *refusal* (the user asked for something this tool can't do), not a *failure* (a known action that errored during execution). It currently exits 1 (fail), making unknown-action indistinguishable from runtime failure for callers/scripts. It should exit 2 per the documented contract.",
+      "suggestion_code": "const spec = MODULES[action];\nif (!spec) {\n  process.stderr.write(`unknown action: ${action}\\n${usage()}`);\n  process.exit(2);\n}",
+      "existing_code": "const spec = MODULES[action];\nif (!spec) {\n  process.stderr.write(`unknown action: ${action}\\n${usage()}`);\n  process.exit(1);\n}",
+      "start_line": 32,
+      "end_line": 36,
+      "category": "bug",
+      "severity": "medium"
+    },
+    {
+      "path": "git-manager.ts",
+      "content": "Per the header contract (0 pass / 1 fail / 2 refuse), `--help`/`-h` is a successful, intentional interaction and conventionally exits 0. It currently exits 1, which callers may interpret as a failure. At minimum it is inconsistent with the documented contract.",
+      "suggestion_code": "if (!action || action === \"--help\" || action === \"-h\") {\n  process.stderr.write(usage());\n  process.exit(0);\n}",
+      "existing_code": "if (!action || action === \"--help\" || action === \"-h\") {\n  process.stderr.write(usage());\n  process.exit(1);\n}",
+      "start_line": 27,
+      "end_line": 30,
+      "category": "bug",
+      "severity": "low"
+    },
+    {
+      "path": "git-manager.ts",
+      "content": "The dynamic import resolves to `Promise\u003cany\u003e`, so `mod` is implicitly `any` and the `mod.run` access is unchecked by the type system (the only guard is the runtime typeof check). This violates the project guideline against `any`. Define a minimal module interface and type the import result so the duck-typed `run` contract is explicit and enforceable.",
+      "suggestion_code": "  interface GitModule { run(args: string[]): unknown; }\n  const mod: GitModule = await import(spec);\n  if (typeof mod.run !== \"function\") {\n    process.stderr.write(`${action}: module ${spec} exports no run(args)\\n`);\n    process.exit(1);\n  }\n  await mod.run(args);",
+      "existing_code": "  const mod = await import(spec);\n  if (typeof mod.run !== \"function\") {\n    process.stderr.write(`${action}: module ${spec} exports no run(args)\\n`);\n    process.exit(1);\n  }\n  await mod.run(args);",
+      "start_line": 39,
+      "end_line": 44,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "session_id": "b9a9d4b3-90e4-46b2-9307-d135ad41214c"
+}

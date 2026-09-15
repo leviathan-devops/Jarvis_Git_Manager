@@ -1,4 +1,4 @@
-// Jarvis Git Manager — refuse helper. Never mutates git.
+// Bun-only: `process` is a Bun global (matches every module: git-manager.ts, status.ts, health.ts...). No import — Deno/browser out of scope.
 import type { Token } from "./types.ts";
 
 // Tokens: HOME-LEAK PUFFER-PARENT LIVE-WORKER STALE-PREVIEW WORKTREE-BOUND

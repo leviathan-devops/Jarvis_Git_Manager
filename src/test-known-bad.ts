@@ -16,14 +16,24 @@ interface CaseResult {
   detail?: string;
 }
 
+// NOTE: `out` (child stdout) is intentionally retained in the shaped result
+// for debugging fixture mismatches; expectRefuse asserts on code+err only.
 async function spawnSelf(argv: string[]): Promise<{ code: number; out: string; err: string }> {
-  const proc = Bun.spawn(["bun", SELF, ...argv], { stdout: "pipe", stderr: "pipe" });
-  const [out, err, code] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ]);
-  return { code, out, err };
+  try {
+    const proc = Bun.spawn(["bun", SELF, ...argv], { stdout: "pipe", stderr: "pipe" });
+    const [out, err, code] = await Promise.all([
+      new Response(proc.stdout).text(),
+      new Response(proc.stderr).text(),
+      proc.exited,
+    ]);
+    return { code, out, err };
+  } catch (e) {
+    return {
+      code: -1,
+      out: "",
+      err: `spawn failed: ${e instanceof Error ? e.message : String(e)}`,
+    };
+  }
 }
 
 export async function run(_args: string[]): Promise<void> {
@@ -42,33 +52,41 @@ export async function run(_args: string[]): Promise<void> {
     }
   }
 
-  // HOME-LEAK: status on the HOME repo must refuse.
-  await expectRefuse("home-leak", ["status", "--cwd", HOME], "HOME-LEAK");
+  try {
+    // HOME-LEAK: status on the HOME repo must refuse.
+    await expectRefuse("home-leak", ["status", "--cwd", HOME], "HOME-LEAK");
 
-  // PUFFER-PARENT: spawn-worker from SHELL for plutus must refuse (W4).
-  if (existsSync(join(CODE, "spawn-worker.ts"))) {
-    await expectRefuse(
-      "puffer-parent",
-      ["spawn-worker", "--cwd", SHELL, "--product", "plutus"],
-      "PUFFER-PARENT",
-    );
-  } else {
-    results.push({ name: "puffer-parent", status: "skip", detail: "spawn-worker.ts not landed (W4)" });
-  }
+    // PUFFER-PARENT: spawn-worker from SHELL for plutus must refuse (W4).
+    if (existsSync(join(CODE, "spawn-worker.ts"))) {
+      await expectRefuse(
+        "puffer-parent",
+        ["spawn-worker", "--cwd", SHELL, "--product", "plutus"],
+        "PUFFER-PARENT",
+      );
+    } else {
+      results.push({ name: "puffer-parent", status: "skip", detail: "spawn-worker.ts not landed (W4)" });
+    }
 
-  // LIVE-WORKER: drop-wrapper on the live grok worktree must refuse (W3).
-  const grok = join(SHELL, "PLUTUS/agent/.worktrees/grok-prototype");
-  if (existsSync(join(CODE, "drop-wrapper.ts")) && existsSync(grok)) {
-    await expectRefuse("live-worker", ["drop-wrapper", "--target", grok], "LIVE-WORKER");
-  } else {
-    results.push({ name: "live-worker", status: "skip", detail: "drop-wrapper.ts or grok path absent" });
-  }
+    // LIVE-WORKER: drop-wrapper on the live grok worktree must refuse (W3).
+    const grok = join(SHELL, "PLUTUS/agent/.worktrees/grok-prototype");
+    if (existsSync(join(CODE, "drop-wrapper.ts")) && existsSync(grok)) {
+      await expectRefuse("live-worker", ["drop-wrapper", "--target", grok], "LIVE-WORKER");
+    } else {
+      results.push({ name: "live-worker", status: "skip", detail: "drop-wrapper.ts or grok path absent" });
+    }
 
-  // STALE-PREVIEW: execute with an unknown preview id must refuse (W3).
-  if (existsSync(join(CODE, "preview.ts"))) {
-    await expectRefuse("stale-preview", ["execute", "--approved", "no-such-id"], "STALE-PREVIEW");
-  } else {
-    results.push({ name: "stale-preview", status: "skip", detail: "preview.ts not landed (W3)" });
+    // STALE-PREVIEW: execute with an unknown preview id must refuse (W3).
+    if (existsSync(join(CODE, "preview.ts"))) {
+      await expectRefuse("stale-preview", ["execute", "--approved", "no-such-id"], "STALE-PREVIEW");
+    } else {
+      results.push({ name: "stale-preview", status: "skip", detail: "preview.ts not landed (W3)" });
+    }
+  } catch (e) {
+    results.push({
+      name: "runner",
+      status: "fail",
+      detail: `unexpected error: ${e instanceof Error ? e.message : String(e)}`,
+    });
   }
 
   const fail = results.filter((r) => r.status === "fail");

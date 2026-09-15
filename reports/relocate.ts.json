@@ -1,0 +1,49 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 2,
+    "total_tokens": 24510,
+    "input_tokens": 13350,
+    "output_tokens": 11160,
+    "cache_read_tokens": 2176,
+    "elapsed": "3m14s"
+  },
+  "tool_calls": {
+    "total": 2,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "relocate.ts",
+      "content": "Nested ternary expressions are prohibited by the review rules and hurt readability. Replace with a flat if/else-if chain so each dry-run reason is unambiguous and easy to scan.",
+      "suggestion_code": "    let why: string;\n    if (a.includes(\"--dry\")) {\n      why = \"explicit --dry\";\n    } else if (!approved) {\n      why = \"no --approved \u003cpreview-id\u003e; default dry\";\n    } else {\n      why = \"JGM_ALLOW_MUTATE!=1; operator approval not present this wave\";\n    }",
+      "existing_code": "    const why = a.includes(\"--dry\")\n      ? \"explicit --dry\"\n      : !approved\n        ? \"no --approved \u003cpreview-id\u003e; default dry\"\n        : \"JGM_ALLOW_MUTATE!=1; operator approval not present this wave\";",
+      "start_line": 57,
+      "end_line": 61,
+      "category": "maintainability",
+      "severity": "medium"
+    },
+    {
+      "path": "relocate.ts",
+      "content": "Duplicate/redundant payload: both `dest` and `destination` are set to the same value (`dest`). This doubles the surface area for consumers and is misleading. Emit one alias consistently (e.g. `destination`) or document why both are required.",
+      "suggestion_code": "        source: src,\n        destination: dest,\n        sourceExists: existsSync(src),",
+      "existing_code": "        source: src,\n        dest,\n        destination: dest,\n        sourceExists: existsSync(src),",
+      "start_line": 67,
+      "end_line": 70,
+      "category": "maintainability",
+      "severity": "low"
+    }
+  ],
+  "session_id": "6fed2b0d-10d1-4529-80db-9e9671746764"
+}
