@@ -1,12 +1,12 @@
 {
  "harness": "st-jgm",
  "mode": "B",
- "generatedAt": "2026-09-15T17:15:20.042Z",
+ "generatedAt": "2026-09-15T17:15:31.548Z",
  "jgmDir": "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager",
  "total": 19,
- "pass": 18,
- "fail": 1,
- "exit": 1,
+ "pass": 19,
+ "fail": 0,
+ "exit": 0,
  "rows": [
   {
    "name": "HOME-LEAK",
@@ -70,9 +70,9 @@
   },
   {
    "name": "PLAN-CLEAN-NEW",
-   "status": "FAIL",
+   "status": "PASS",
    "exit": 0,
-   "detail": "e=0 previewId=preview-20260915T171519 file=none bytes=0 added=0 overwrittenExisting=true"
+   "detail": "e=0 previewId=preview-20260915T171531 file=preview-20260915T171531.json bytes=1230 added=1 overwrittenExisting=false"
   },
   {
    "name": "STATUS-TOPLEVEL",
@@ -134,7 +134,11 @@
   "worker": "f8d9dca",
   "grok": "61f9ee3"
  },
- "preview": null,
+ "preview": {
+  "id": "preview-20260915T171531",
+  "file": "/home/leviathan/.omp/git-manager/preview-20260915T171531.json",
+  "bytes": 1230
+ },
  "wt": {
   "present": false
  }
