@@ -100,11 +100,14 @@ export async function run(args: string[]): Promise<void> {
   }
 
   if (a.includes("--dry") || !approved || process.env.JGM_ALLOW_MUTATE !== "1") {
-    const why = a.includes("--dry")
-      ? "explicit --dry"
-      : !approved
-        ? "no --approved <preview-id>; default dry"
-        : "JGM_ALLOW_MUTATE!=1; operator approval not present this wave";
+    let why: string;
+    if (a.includes("--dry")) {
+      why = "explicit --dry";
+    } else if (!approved) {
+      why = "no --approved <preview-id>; default dry";
+    } else {
+      why = "JGM_ALLOW_MUTATE!=1; operator approval not present this wave";
+    }
     process.stderr.write(`drop-wrapper (dry): would drop ${abs} (${why})\n`);
     console.log(
       JSON.stringify({

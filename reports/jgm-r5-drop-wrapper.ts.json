@@ -1,0 +1,38 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 14013,
+    "input_tokens": 8689,
+    "output_tokens": 5324,
+    "cache_read_tokens": 2176,
+    "elapsed": "2m22s"
+  },
+  "tool_calls": {
+    "total": 1,
+    "by_tool": {
+      "code_comment": 1
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/drop-wrapper.ts",
+      "content": "Nested ternary expression detected in the `why` assignment. The checklist prohibits nested ternary expressions. This should be refactored to an if/else chain or extracted helper for readability and compliance.",
+      "suggestion_code": "let why: string;\n    if (a.includes(\"--dry\")) {\n      why = \"explicit --dry\";\n    } else if (!approved) {\n      why = \"no --approved \u003cpreview-id\u003e; default dry\";\n    } else {\n      why = \"JGM_ALLOW_MUTATE!=1; operator approval not present this wave\";\n    }",
+      "existing_code": "const why = a.includes(\"--dry\")\n      ? \"explicit --dry\"\n      : !approved\n        ? \"no --approved \u003cpreview-id\u003e; default dry\"\n        : \"JGM_ALLOW_MUTATE!=1; operator approval not present this wave\";",
+      "start_line": 103,
+      "end_line": 107,
+      "category": "maintainability",
+      "severity": "medium"
+    }
+  ],
+  "session_id": "24ccb900-4dc2-4416-9b96-3276772e5ac3"
+}
