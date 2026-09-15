@@ -1,7 +1,7 @@
 {
  "harness": "st-jgm",
  "mode": "B",
- "generatedAt": "2026-09-15T18:04:09.027Z",
+ "generatedAt": "2026-09-15T18:28:57.586Z",
  "jgmDir": "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager",
  "total": 19,
  "pass": 19,
@@ -72,7 +72,7 @@
    "name": "PLAN-CLEAN-NEW",
    "status": "PASS",
    "exit": 0,
-   "detail": "e=0 previewId=preview-20260915T180408 file=preview-20260915T180408.json bytes=1230 added=1 overwrittenExisting=false"
+   "detail": "e=0 previewId=preview-20260915T182857 file=preview-20260915T182857.json bytes=1230 added=1 overwrittenExisting=false"
   },
   {
    "name": "STATUS-TOPLEVEL",
@@ -135,8 +135,8 @@
   "grok": "61f9ee3"
  },
  "preview": {
-  "id": "preview-20260915T180408",
-  "file": "/home/leviathan/.omp/git-manager/preview-20260915T180408.json",
+  "id": "preview-20260915T182857",
+  "file": "/home/leviathan/.omp/git-manager/preview-20260915T182857.json",
   "bytes": 1230
  },
  "wt": {

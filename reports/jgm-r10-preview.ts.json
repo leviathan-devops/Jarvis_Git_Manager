@@ -1,0 +1,83 @@
+{
+  "status": "success",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 6,
+    "total_tokens": 31062,
+    "input_tokens": 22845,
+    "output_tokens": 8217,
+    "cache_read_tokens": 5184,
+    "elapsed": "3m20s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "file_read": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/preview.ts",
+      "content": "TS2365/TS7052/TS2532/TS2339/TS2575 — `pv.ops` is typed `Record\u003cstring, unknown\u003e[]` (via `Array.isArray(pv.ops)` check), so iterating `for (const op of ops)` infers `op` as `unknown`, causing compile errors on every access: `op.action`, `op.target`, `op.dest`, and the `unknown op action ${op.action}` log. Fix: type `ops` as `PreviewOp[]` (import from ./types.ts) — e.g. `const ops = (Array.isArray(pv.ops) ? pv.ops : []) as PreviewOp[];` — or cast elements in the loop (`for (const op of ops as PreviewOp[])`).",
+      "existing_code": "  const ops = Array.isArray(pv.ops) ? pv.ops : [];\n  if (process.env.JGM_ALLOW_MUTATE !== \"1\") {",
+      "start_line": 200,
+      "end_line": 201,
+      "category": "bug",
+      "severity": "high"
+    },
+    {
+      "path": "src/preview.ts",
+      "content": "TS2339 — `pv.ops`, `pv.previewId`, `pv.keep`, `pv.measuredAt` are accessed on `PreviewDoc` (=`PlanCleanJson \u0026 Record\u003cstring, unknown\u003e`). If `PlanCleanJson` is not imported/used as a constraint, these may fail to resolve. Verify `import type { PlanCleanJson }` is present and these fields are declared. (Already imported — OK.)",
+      "existing_code": "import type { PlanCleanJson } from \"./types.ts\";",
+      "start_line": 16,
+      "end_line": 16,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/preview.ts",
+      "content": "Missing `await run(process.argv.slice(2))` error handling — at the bottom, `if (import.meta.main) { await run(...); }` is top-level-await in an ESM/bun module. Uncaught promise rejections from `run()` (e.g., `loadPreview` network/IO errors) surface as unhandled rejections. Consider wrapping in try/catch and exiting non-zero. (Minor, but consistency matters for a CLI entry.)",
+      "existing_code": "if (import.meta.main) {\n  await run(process.argv.slice(2));",
+      "start_line": 298,
+      "end_line": 299,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/preview.ts",
+      "content": "In `run()`, the branch detection: `a.includes(\"execute\")` will trigger `runExecute` even if a user passes `--id execute` (treating the literal id 'execute' as an action). Low risk but semantically fragile — consider checking `--approved` presence before the bare `execute` string. Also `a.includes(\"execute\")` is O(n) on a possibly small array — acceptable, not flagged.",
+      "existing_code": "  if (a.includes(\"execute\") || a.includes(\"--approved\") || parseApproved(a) !== null) {\n    await runExecute(a);",
+      "start_line": 255,
+      "end_line": 256,
+      "category": "maintainability",
+      "severity": "low"
+    },
+    {
+      "path": "src/preview.ts",
+      "content": "`loadFromFiles` scans `STORE_DIR` with `new Glob(\"preview-*.json\")` — if `STORE_DIR` does not exist, `glob.scan` throws (not all Bun versions throw synchronously; some emit). The code catches it, which is correct. No defect. (Acknowledged, no comment needed.)",
+      "existing_code": "  try {\n    const glob = new Glob(\"preview-*.json\");",
+      "start_line": 67,
+      "end_line": 68,
+      "category": "other",
+      "severity": "low"
+    },
+    {
+      "path": "src/preview.ts",
+      "content": "`verifyShas` lowercases `live` via comparison `live !== sha.toLowerCase()`. `measureHead` returns the hash already lowercase (git output is hex), and `sha` regex is case-insensitive. This comparison is robust — OK. No defect.",
+      "existing_code": "    if (live === null || live !== sha.toLowerCase()) {",
+      "start_line": 165,
+      "end_line": 165,
+      "category": "other",
+      "severity": "low"
+    }
+  ],
+  "session_id": "089007be-4884-4902-b362-dd2ef4135669"
+}

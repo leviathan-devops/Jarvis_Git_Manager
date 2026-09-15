@@ -13,7 +13,7 @@ import { run as runDropWrapper } from "./drop-wrapper.ts";
 import { run as runIgnoreShell } from "./ignore-shell.ts";
 import { existsSync } from "node:fs";
 import { refuse } from "./refuse.ts";
-import type { PlanCleanJson } from "./types.ts";
+import type { PlanCleanJson, PreviewOp } from "./types.ts";
 
 export const STORE_DIR = `${process.env.HOME ?? "/home/leviathan"}/.omp/git-manager`;
 export const STORE_DB = `${STORE_DIR}/store.sqlite`;
@@ -197,7 +197,7 @@ export async function runExecute(args: string[]): Promise<void> {
   if (!check.ok) {
     refuse("STALE-PREVIEW", `preview ${id} is stale: ${check.detail}`);
   }
-  const ops = Array.isArray(pv.ops) ? pv.ops : [];
+  const ops = (Array.isArray(pv.ops) ? pv.ops : []) as PreviewOp[];
   if (process.env.JGM_ALLOW_MUTATE !== "1") {
     process.stderr.write(
       `execute ${id}: dry run (JGM_ALLOW_MUTATE!=1; operator approval not present this wave)\n`,
