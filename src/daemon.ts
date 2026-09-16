@@ -3,7 +3,6 @@
 // for product|leftover rows under a watched root, record mark-gone notes
 // for stored paths missing from health. Observes and stores only: it never
 // changes git state and never deletes store rows.
-import { resolve } from "node:path";
 import {
   GI_DIR,
   PLUTUS_AGENT,
@@ -12,8 +11,9 @@ import {
 } from "./health.ts";
 import { isKeepLive } from "./keep-table.ts";
 
-const JGM_ROOT = resolve(import.meta.dir, "..");
-// Product roots the daemon watches for adoption notes.
+const JGM_ROOT = "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager";
+// JGM_ROOT is a literal (not import.meta.dir) so it matches health.ts
+// comparisons and git pathnames. Product roots the daemon watches.
 const WATCHED_ROOTS: string[] = [PLUTUS_AGENT, GI_DIR, JGM_ROOT];
 
 interface TickJson {
