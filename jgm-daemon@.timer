@@ -1,0 +1,11 @@
+[Unit]
+Description=Jarvis Git Manager daemon tick every 60s (%i)
+
+[Timer]
+OnBootSec=30s
+OnUnitActiveSec=60s
+AccuracySec=10s
+Persistent=false
+
+[Install]
+WantedBy=timers.target

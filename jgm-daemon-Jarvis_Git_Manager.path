@@ -1,0 +1,9 @@
+[Unit]
+Description=Jarvis Git Manager daemon watch (Jarvis_Git_Manager)
+
+[Path]
+PathModified=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager/.git/refs/heads
+Unit=jgm-daemon@Jarvis_Git_Manager.service
+
+[Install]
+WantedBy=default.target

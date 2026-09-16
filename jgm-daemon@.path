@@ -1,0 +1,15 @@
+[Unit]
+Description=Jarvis Git Manager daemon watch (%i)
+
+[Path]
+# %i arrives escaped (dashes for slashes). Unescape at enable time by
+# instantiating with the literal path instead: copy this file per product
+# as jgm-daemon-<name>.path with an absolute PathModified (see below).
+# Template form kept for the service only; path units MUST be concrete.
+PathModified=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager/.git/refs/heads
+Unit=jgm-daemon@Jarvis_Git_Manager.service
+# Timer fallback: a jgm-daemon@.timer sibling (OnUnitActiveSec=60s) may
+# trigger the same service every 60s when path events stay quiet.
+
+[Install]
+WantedBy=default.target

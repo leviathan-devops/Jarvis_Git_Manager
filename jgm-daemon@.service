@@ -1,0 +1,15 @@
+[Unit]
+Description=Jarvis Git Manager daemon tick (%i)
+After=network.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager
+ExecStart=/home/leviathan/.bun/bin/bun /home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager/src/daemon.ts
+# Observe + store only: the tick never runs git worktree add|move|remove,
+# never commits, never deletes store rows.
+# Timer fallback: a jgm-daemon@.timer sibling (OnUnitActiveSec=60s) may
+# trigger this same service every 60s when path events stay quiet.
+
+[Install]
+WantedBy=default.target

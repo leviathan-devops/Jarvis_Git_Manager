@@ -64,8 +64,9 @@ export function classifyWorktree(absPath: string, mainToplevels: Set<string>): W
   return "leftover";
 }
 
-export async function collectHealth(): Promise<HealthJson> {
-  const sources = [SHELL, PLUTUS_AGENT, GI_DIR].filter((s) => existsSync(s));
+export async function collectHealth(extraSources: string[] = []): Promise<HealthJson> {
+  const JGM_ROOT = "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/Jarvis_Git_Manager";
+  const sources = [SHELL, PLUTUS_AGENT, GI_DIR, JGM_ROOT, ...extraSources].filter((s) => existsSync(s));
   const toplevels = new Set<string>();
   const entries: { toplevel: string; path: string; branch: string; head: string }[] = [];
   for (const src of sources) {
