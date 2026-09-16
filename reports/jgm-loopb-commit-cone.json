@@ -1,0 +1,46 @@
+{
+  "status": "completed_with_warnings",
+  "llm": {
+    "provider": "openrouter-laguna",
+    "model": "poolside/laguna-s-2.1:free"
+  },
+  "summary": {
+    "files_reviewed": 1,
+    "comments": 1,
+    "total_tokens": 38319,
+    "input_tokens": 26866,
+    "output_tokens": 11453,
+    "cache_read_tokens": 6400,
+    "elapsed": "4m5s"
+  },
+  "tool_calls": {
+    "total": 3,
+    "by_tool": {
+      "code_comment": 1,
+      "code_search": 2
+    },
+    "failure": 0,
+    "failure_by_tool": {},
+    "failure_details": []
+  },
+  "comments": [
+    {
+      "path": "src/commit-cone.ts",
+      "content": "`Database` is used (new Database(...)) but never imported. Sibling modules import it as `import { Database } from \"bun:sqlite\";` (see src/health.ts:5, src/preview.ts). As written, any commit that reaches the sqlite block throws ReferenceError: Database is not defined, which is swallowed by the outer `catch {}` so the best-effort store silently fails. Add `import { Database } from \"bun:sqlite\";` at the top.",
+      "suggestion_code": "import { Database } from \"bun:sqlite\";\n\nconst dir = `${process.env.HOME ?? HOME}/.omp/git-manager`;\nmkdirSync(dir, { recursive: true });\nconst db = new Database(`${dir}/store.sqlite`);",
+      "existing_code": "  try {\n    const dir = `${process.env.HOME ?? HOME}/.omp/git-manager`;\n    mkdirSync(dir, { recursive: true });\n    const db = new Database(`${dir}/store.sqlite`);",
+      "start_line": 270,
+      "end_line": 273,
+      "category": "bug",
+      "severity": "high"
+    }
+  ],
+  "warnings": [
+    {
+      "file": "src/commit-cone.ts",
+      "message": "comments arrived as a serialized string instead of an array; repaired 4 unescaped character(s)",
+      "type": "comment_args_repaired"
+    }
+  ],
+  "session_id": "5e9b7c3e-b729-4c30-876e-0a00ddccaffe"
+}
