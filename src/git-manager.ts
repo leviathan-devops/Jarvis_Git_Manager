@@ -13,6 +13,7 @@ const MODULES: Record<string, string> = {
   "execute": "./preview.ts",
   "provision": "./provision.ts",
   "test-known-bad": "./test-known-bad.ts",
+  "archive-leftover": "./archive-leftover.ts",
 };
 
 function usage(): string {

@@ -1,0 +1,33 @@
+name: ci
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.3"
+      - name: Watched red — planted no-op fails the archive test
+        run: |
+          set +e
+          JGM_ARCHIVE_PLANTED_BUG=1 "$HOME/.bun/bin/bun" test --test-name-pattern "^a leftover gets archived$" ./test/archive-leftover.test.ts > /tmp/gk1-watched-red.txt 2>&1
+          code=$?
+          set -e
+          cat /tmp/gk1-watched-red.txt
+          if [ "$code" -eq 0 ]; then
+            echo "watched-red FAIL: planted bug did not fail the archive test"
+            exit 1
+          fi
+          grep -q "Expected: true" /tmp/gk1-watched-red.txt
+          grep -q "Received: false" /tmp/gk1-watched-red.txt
+          grep -q "(fail) a leftover gets archived" /tmp/gk1-watched-red.txt
+          echo "watched-red PASS: planted no-op failed the archive test before the real run"
+      - name: Archive leftover tests
+        run: "$HOME/.bun/bin/bun" test ./test/archive-leftover.test.ts
