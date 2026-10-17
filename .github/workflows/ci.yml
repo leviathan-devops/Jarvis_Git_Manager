@@ -30,4 +30,5 @@ jobs:
           grep -q "(fail) a leftover gets archived" /tmp/gk1-watched-red.txt
           echo "watched-red PASS: planted no-op failed the archive test before the real run"
       - name: Archive leftover tests
-        run: "$HOME/.bun/bin/bun" test ./test/archive-leftover.test.ts
+        run: |
+          "$HOME/.bun/bin/bun" test ./test/archive-leftover.test.ts
