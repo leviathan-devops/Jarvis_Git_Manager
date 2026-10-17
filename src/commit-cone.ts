@@ -68,12 +68,27 @@ function underLive(root: string, p: string): boolean {
 }
 
 // Throwaway probe roots: the only non-keep-live toplevels commit-cone ever
-// writes in. Covers the /tmp proof repos and ST sandboxes.
+// writes in. Hardcoded system temp directories only (/tmp, /var/tmp).
+// TMPDIR and os.tmpdir() are caller-controlled, so they are not an ownership
+// exemption. Compare canonical paths: a symlink under a probe root that
+// lands elsewhere does not pass.
 function isProbeRoot(tl: string): boolean {
   const roots: string[] = ["/tmp", "/var/tmp"];
-  const td = process.env.TMPDIR;
-  if (td !== undefined && td.startsWith("/")) roots.push(stripSlash(td));
-  return roots.some((r) => tl === r || tl.startsWith(r + "/"));
+  let realTl: string;
+  try {
+    realTl = stripSlash(realpathSync(tl));
+  } catch {
+    return false;
+  }
+  return roots.some((r) => {
+    let root = r;
+    try {
+      root = stripSlash(realpathSync(r));
+    } catch {
+      // probe root missing: the literal path is the only candidate
+    }
+    return realTl === root || realTl.startsWith(root + "/");
+  });
 }
 
 // Secret patterns, built from fragments so this file's own source never
