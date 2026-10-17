@@ -42,6 +42,20 @@ jobs:
       - name: Stairstepper L1
         run: bash scripts/stairstepper-l1.sh --repo . --rev HEAD
 
+  st-jgm-import:
+    name: st-jgm import
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.3"
+
+      - name: Import does not start the st-jgm harness
+        run: "$HOME/.bun/bin/bun" test ./test/st-jgm-import.test.ts
+
   reusable-l1:
     name: reusable-l1
     permissions:
