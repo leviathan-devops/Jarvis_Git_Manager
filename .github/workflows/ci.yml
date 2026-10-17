@@ -32,3 +32,6 @@ jobs:
       - name: Archive leftover tests
         run: |
           "$HOME/.bun/bin/bun" test ./test/archive-leftover.test.ts
+      - name: Import does not start the st-jgm harness
+        run: |
+          "$HOME/.bun/bin/bun" test ./test/st-jgm-import.test.ts
