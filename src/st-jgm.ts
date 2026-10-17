@@ -32,13 +32,13 @@ const PROV = join(import.meta.dir, "..", "src", "provision.ts");
 const DAEMON = join(import.meta.dir, "..", "src", "daemon.ts");
 const CONE = join(import.meta.dir, "..", "src", "commit-cone.ts");
 const GROK = join(PLUTUS_AGENT, ".worktrees", "grok-prototype");
-const WORKER_SHORT = (() => {
+function workerShort(): string {
   try {
     const r = Bun.spawnSync(["git", "-C", "/home/leviathan/JARVIS_WORKSPACE/Shared_Workspace/PLUTUS/agent", "rev-parse", "--short", "omp-worker-1"], { stdout: "pipe" });
     const s = String(r.stdout || "").trim();
     return s || "ac32ded";
   } catch { return "ac32ded"; }
-})();
+}
 const GROK_SHORT = "61f9ee3";
 
 interface Row {
@@ -184,7 +184,8 @@ function readGitignore(): string {
   }
 }
 
-async function main(): Promise<void> {
+export async function main(): Promise<void> {
+  const WORKER_SHORT = workerShort();
   // Real-import pre-checks (values folded into scenario details below).
   const approvedSample = parseApproved(["--approved", "no-such-id"]);
   const grokKeep = isKeepLive(GROK);
@@ -606,4 +607,6 @@ async function guarded(): Promise<void> {
   }
 }
 
-await guarded();
+if (import.meta.main) {
+  await guarded();
+}
