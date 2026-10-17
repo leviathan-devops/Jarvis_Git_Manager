@@ -1,0 +1,66 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+
+permissions:
+  contents: read
+
+jobs:
+  CI:
+    name: CI
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: L1 proof fixtures
+        run: bash scripts/stairstepper-l1-proof.sh
+
+      - name: L3 predicate self-test
+        run: python3 scripts/stairstepper_l3_eval.py --self-test
+
+      - name: Ruleset generator drift
+        run: python3 scripts/generate_rulesets.py --check
+
+      - name: Ruleset schema and W6 policy
+        run: python3 scripts/validate_rulesets.py
+
+  L1:
+    name: L1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout head commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          fetch-depth: 1
+
+      - name: Stairstepper L1
+        run: bash scripts/stairstepper-l1.sh --repo . --rev HEAD
+
+  st-jgm-import:
+    name: st-jgm import
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install bun
+        run: curl -fsSL https://bun.sh/install | bash -s "bun-v1.4.3"
+
+      - name: Import does not start the st-jgm harness
+        run: |
+          "$HOME/.bun/bin/bun" test ./test/st-jgm-import.test.ts
+
+  reusable-l1:
+    name: reusable-l1
+    permissions:
+      contents: read
+    uses: ./.github/workflows/stairstepper-l1.yml
+    with:
+      rev: ${{ github.event.pull_request.head.sha || github.sha }}

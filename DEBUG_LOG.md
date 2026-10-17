@@ -79,3 +79,85 @@ Classes: keep-live=5 wrapper=1 leftover=3 product=1 (total 10). Live SHAs: worke
 - PLUTUS `worktree list --porcelain`: 3 entries unchanged (plutus/main, omp-worker-1, plutus/grok-prototype).
 - SHELL `.gitignore` sha `1db490d2...a3aff66a` unchanged; `ignore-shell` dry-only confirmed.
 - `which wt` e=1 (absent, expected). `provision.ts` dotdir/docs refuses e=2, nothing created.
+
+---
+
+# DEBUG_LOG — W4 verify-daemon gate (2026-09-16, 26-row bracket)
+
+Gate run: `bun src/st-jgm.ts` exit 0, 26/26 PASS, preview `preview-20260916T125118` (1230 bytes, reports/verify-daemon.json copy). Probes this session wrote `preview-20260916T123929`, `...124900`, `...124937` (all preview-<new>, no overwrite).
+
+## Host-live proof: mimo MEMORY-journal* sha256 before AND after the ST run
+
+BEFORE (global, 17 files, sorted):
+```
+0a797c3cf1d6d5fd87113162f1d3690c410db5027a42945752b1ccf0f7e347b2  .../global/MEMORY-journal-thread-system-changelog.md
+284c9629896d819d3ea4c8d14fdaf5e0416ffbb3f5cced6bcd94d14649d95ca4  .../global/MEMORY-journal.md
+2ca4f7ea0b8cf2a3cc37a3445e427329ba862189321638878a9c38f03bf5abcd  .../global/MEMORY-journal-thread-goalmode-cards.md
+367baf6128bbc38747529c712fa3897d457f49dd372ffd13edff8cfe19a9387c  .../global/MEMORY-journal-thread-super-omp-serena.md
+3f91041fbe337c752a9bf41a0e7544ef7af5558df672be5d7295c824cca6eec4  .../global/MEMORY-journal-thread-omni-vision.md
+445adc8d8fe04699d06d112c08dc9f8b905c20b66e43f368e0f55c08e7afdc2c  .../global/MEMORY-journal-thread-super-omp-code-review.md
+57f6d5dfbd394b10040d8ce2f1ec5581d373250d571f75fc9b870862907d94f4  .../global/MEMORY-journal-thread-skill-library.md
+6419ca8e54fe67a6337aa3c7682650aff14e57b82b36efeca038028e3652810d  .../global/MEMORY-journal-thread-super-omp-superpowers.md
+6ab381137db5db89de40b1850918b572d2217fb715a6c66d39de62c6c64e3b13  .../global/MEMORY-journal-thread-super-goal-engine.md
+89afe2112291cf6b2f37109e5781ad59ce3d2493b49a6aab1655178a5db82f94  .../global/MEMORY-journal-thread-super-omp-context7.md
+8a9566ebab2c9188ed75cd73c28c397f8507ca2b459d2fba08093eae85ae701f  .../global/MEMORY-journal-threads.md
+9fab167608769d5a52afb4e712710b4926761f2408ff8e7be38ea926e98bedcf  .../global/MEMORY-journal-thread-super-omp-skill-packs.md
+c3639151650220a758fa667dc564d04c6d061f86567be1f636eff66e364f0d31  .../global/MEMORY-journal-thread-container-testing.md
+d0ddf3fc2c02ffa38cdb8a3f24b48cbc223ab1dea69e83cae4dc688af993655a  .../global/MEMORY-journal-thread-super-omp-pr-review-toolkit.md
+d1862913ea409220995a037c060d2e4d0c2d45e86866d3cbfd72ca6422f5775c  .../global/MEMORY-journal-thread-super-omp.md
+e1a83bf9d488cec4c8997169050bb1a3383185d9d78c8cc6a7b9353fc913114c  .../global/MEMORY-journal-thread-super-omp-security-guidance.md
+ed20a4f0a6f55cf802fd55bed7501acee6ee514622eba36b89dc1ae93e2cb732  .../global/MEMORY-journal-thread-super-omp-frontend-design.md
+combined: 689043e425dd1438476b96a41271ef06028b008911808694f0d3e85d886a4628
+```
+BEFORE (project c507206c, 5 files):
+```
+057dcff8d844f5ce43ec0980fc9a8c7e1f6a4051af107b44c403d1f52f7b36bc  .../MEMORY-journal-thread-architecture-set.md
+34f919a45ec8fc5fb829086b5fa0e5d1418f97c5d5bc18fec193a01c10c6d0c3  .../MEMORY-journal-thread-architecture.md
+7384df24f32053d3a2106f8187a84d99937852e4c6a11042388674ee0f32e157  .../global/MEMORY-journal-arc-and-tooling-laws.md
+caf9170dc9661269e1969d3a59bdfd49dc92d3b99c34f81f400a50520dce1402  .../global/MEMORY-journal-rename-arc.md
+ed19f194b5c96f2462a22c89d5e4ea73298ba042deefb0b2f334e31053b0293d  .../global/MEMORY-journal-thread-laws.md
+```
+
+AFTER (same commands re-run post-gate):
+- global: identical 17 lines, `diff /tmp/mimo-before.sha /tmp/mimo-after.sha` → `MIMO-GLOBAL-EQUAL`, combined `689043e4...` unchanged.
+- project: `diff /tmp/mimo-proj-before.sha /tmp/mimo-proj-after.sha` → `MIMO-PROJ-EQUAL`.
+
+VERDICT: mimo sha EQUAL across the ST run — zero mimo mutations.
+
+## Health JSON (gate run, counts)
+
+keep-live=5 wrapper=1 leftover=7 product=1 (total 14). Live SHAs: worker 8f4ac74, grok 61f9ee3.
+
+## Daemon tick JSON (gate run)
+
+```json
+{"tick":"2026-09-16T12:51:19.001Z","upserts":14,"adopts":0,"gone":0,"classes":{"leftover":7,"wrapper":1,"keep-live":5,"product":1}}
+```
+Shape `{tick,upserts,adopts,gone,classes}` observed live. Store `git_worktree` = 14 rows. Forbidden-verb grep on `src/daemon.ts` (`worktree add|worktree move|worktree remove|git commit|branch -D`) → empty (exit 1, 0 matches).
+
+## Commit-cone JSON (gate run, throwaway only)
+
+Legit: `{"action":"commit-cone","sha":"9b9546ba307f...","files":["/tmp/jgm-st-cone-*/cone-file.txt"],"dry":false}` e=0 on `mkdtemp /tmp/jgm-st-cone-*` (init + local identity), `git show HEAD --name-only` = exactly `cone-file.txt`, dirty `keep-out.txt` still modified (cone-only); throwaway `rm -rf` after. Refuses: `--paths /etc/hostname` e=2 `UNOWNED-PATH`; secret `api_key = ...` e=2 `SECRET-HIT` (names only); `--cwd SHELL` e=2 `PUFFER-PARENT`.
+
+## Preview (gate run)
+
+`preview-20260916T125118` (1230 bytes, reports/verify-daemon.json copy): 1× relocate + 2× drop-wrapper; keep=5 paths. DRY ONLY (default dry, no JGM_ALLOW_MUTATE). Probes wrote `preview-20260916T123929`, `...124900`, `...124937` (all preview-<new>, no overwrite).
+
+## Known-bad JSON (gate run)
+
+```json
+{"results":[{"name":"home-leak","status":"pass"},{"name":"puffer-parent","status":"pass"},{"name":"live-worker","status":"pass"},{"name":"stale-preview","status":"pass"}]}
+```
+`test-known-bad` e=0, 4/4 pass.
+
+## Zero git mutations on product trees (before == after)
+
+- PLUTUS/agent e99377f155c357f87c33082ce4efff6a37d5371a == e99377f...
+- grok-prototype 61f9ee323b625ef556ef68c9b1646279b910851d == 61f9ee3...
+- nested worker 8f4ac74 == 8f4ac74 (rev-parse --short omp-worker-1)
+- SHELL abfa1842b84e4631c2bd9fa727555fdbe8b484f4 == abfa184...
+- GI c903827a4d21d3e7b178345394106b50609fa32a == c903827...
+- PLUTUS `worktree list --porcelain`: 3 entries unchanged (plutus/main, omp-worker-1, plutus/grok-prototype).
+- SHELL `.gitignore` sha `1db490d2...a3aff66a` unchanged; `ignore-shell` dry-only confirmed.
+- `which wt` e=0 (`/home/leviathan/.cargo/bin/wt`), `wt list` e=0 shows-main=true. `provision.ts` dotdir/docs refuses e=2, nothing created.
+- No live `spawn-worker --live` in this gate (W3 already proved live on throwaway); row SPAWN-LIVE-DRY is product-cwd dry e=0 only.

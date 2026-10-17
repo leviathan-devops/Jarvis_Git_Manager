@@ -1,0 +1,67 @@
+name: Stairstepper L1
+
+on:
+  workflow_call:
+    inputs:
+      rev:
+        description: Commit SHA or git rev to check in the caller repository.
+        required: false
+        type: string
+        default: HEAD
+
+permissions:
+  contents: read
+
+jobs:
+  L1:
+    name: L1
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout caller
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.rev }}
+          fetch-depth: 1
+          path: caller
+
+      - name: Select L1 script
+        id: script
+        env:
+          WORKFLOW_REF: ${{ github.workflow_ref }}
+        run: |
+          set -euo pipefail
+          if [[ -f caller/scripts/stairstepper-l1.sh ]]; then
+            echo "path=$GITHUB_WORKSPACE/caller/scripts/stairstepper-l1.sh" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          ref="${WORKFLOW_REF##*@}"
+          repo="${WORKFLOW_REF%%/.github/*}"
+          if [[ -z "$ref" || -z "$repo" || "$repo" == "$WORKFLOW_REF" ]]; then
+            echo "Could not parse the workflow source from github.workflow_ref" >&2
+            exit 1
+          fi
+          echo "repo=$repo" >> "$GITHUB_OUTPUT"
+          echo "ref=$ref" >> "$GITHUB_OUTPUT"
+          echo "path=" >> "$GITHUB_OUTPUT"
+
+      - name: Checkout stairstepper source
+        if: steps.script.outputs.path == ''
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.script.outputs.repo }}
+          ref: ${{ steps.script.outputs.ref }}
+          path: stairstepper-src
+          persist-credentials: false
+
+      - name: Run L1
+        env:
+          REV: ${{ inputs.rev }}
+          SCRIPT_PATH: ${{ steps.script.outputs.path }}
+        run: |
+          set -euo pipefail
+          script="$SCRIPT_PATH"
+          if [[ -z "$script" ]]; then
+            script="$GITHUB_WORKSPACE/stairstepper-src/scripts/stairstepper-l1.sh"
+          fi
+          bash "$script" --repo "$GITHUB_WORKSPACE/caller" --rev "$REV"
