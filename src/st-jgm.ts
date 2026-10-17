@@ -1,20 +1,25 @@
 // Jarvis Git Manager — st-jgm.ts (W4 verify, Mode-B bun harness).
-//
+
 // Mode-B: imports the REAL product modules (no mocks, no fixtures) and
 // exercises the REAL CLI via Exit-captured spawns (child exit codes are
 // captured values, never propagated). One runPromise at the bottom.
-//
+
 // Scenarios: HOME-LEAK / PUFFER-PARENT / LIVE-WORKER / STALE-PREVIEW (e=2 +
 // token); health e=0 classes keep-live>=3 wrapper>=1 + LIVE SHAs worker
-// ac32ded + grok 61f9ee3; plan-clean writes preview-<utc>.json bytes on disk
+// 8f4ac74 + grok 61f9ee3; plan-clean writes preview-<utc>.json bytes on disk
 // (preview-<new> only, never overwrite existing); legit status in
 // PLUTUS/agent e=0 field "toplevel" (StatusJson.repoRoot IS the toplevel);
 // legit bind prints "/move "; legit spawn dry from Jarvis_Git_Manager cwd
-// e=0 field "dry":true; provision.ts + ignore-shell dry only; wt binary
-// absent (expected); test-known-bad 4/4. Table PASS/FAIL on stderr, JSON
-// record on stdout, exit 0 iff all PASS.
-import { readdirSync, statSync, readFileSync, existsSync } from "node:fs";
+// e=0 field "dry":true; provision.ts + ignore-shell dry only; daemon tick
+// e=0 upserts>=3 classes keep-live>=3 wrapper>=1 + daemon no-write grep
+// empty; commit-cone legit on /tmp throwaway e=0 sha + cone-only +
+// outside/secret/shell refuses e=2; spawn product-cwd dry e=0 (no
+// live-spawn, W3 already proved live on throwaway); wt binary present e=0;
+// test-known-bad 4/4. Table PASS/FAIL on stderr, JSON record on stdout,
+// exit 0 iff all PASS.
+import { readdirSync, statSync, readFileSync, existsSync, mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
+import { tmpdir } from "node:os";
 import { HOME, SHELL, KEEP_PATHS, isKeepLive } from "../src/keep-table.ts";
 import { STORE_DIR, PLUTUS_AGENT, classifyWorktree, collectHealth } from "../src/health.ts";
 import { normPath } from "../src/status.ts";
@@ -24,6 +29,8 @@ import { parseApproved } from "../src/preview.ts";
 const JGM_DIR = normPath(join(import.meta.dir, ".."));
 const SELF = join(import.meta.dir, "..", "src", "git-manager.ts");
 const PROV = join(import.meta.dir, "..", "src", "provision.ts");
+const DAEMON = join(import.meta.dir, "..", "src", "daemon.ts");
+const CONE = join(import.meta.dir, "..", "src", "commit-cone.ts");
 const GROK = join(PLUTUS_AGENT, ".worktrees", "grok-prototype");
 const WORKER_SHORT = (() => {
   try {
@@ -79,6 +86,21 @@ interface IgnoreOut {
 
 interface KnownBadOut {
   results: Array<{ name: string; status: string }>;
+}
+
+interface TickOut {
+  tick: string;
+  upserts: number;
+  adopts: number;
+  gone: number;
+  classes: Record<string, number>;
+}
+
+interface ConeOut {
+  action: string;
+  sha: string;
+  files: string[];
+  dry: boolean;
 }
 
 const rows: Row[] = [];
@@ -400,6 +422,128 @@ async function main(): Promise<void> {
     k.code === 0 && kfail === 0 && kpass === 4,
     k.code,
     `e=${k.code} pass=${kpass}/4 fail=${kfail} cases=${kcases.join(",").slice(0, 160)}`,
+  );
+
+  // 20. DAEMON-TICK: bun src/daemon.ts exit 0, upserts>=3, classes keep-live>=3 wrapper>=1.
+  const t = spawnBin("bun", [DAEMON]);
+  const tj = tryJson(t.out) as TickOut | null;
+  const tKeep = tj !== null && tj.classes !== null && typeof tj.classes === "object" ? Number(tj.classes["keep-live"] ?? 0) : -1;
+  const tWrap = tj !== null && tj.classes !== null && typeof tj.classes === "object" ? Number(tj.classes["wrapper"] ?? 0) : -1;
+  const tUps = tj !== null && typeof tj.upserts === "number" ? tj.upserts : -1;
+  rec(
+    "DAEMON-TICK",
+    t.code === 0 && tj !== null && typeof tj.tick === "string" && tUps >= 3 && tKeep >= 3 && tWrap >= 1,
+    t.code,
+    `e=${t.code} tick=${tj !== null ? tj.tick : "?"} upserts=${tUps} keep-live=${tKeep} wrapper=${tWrap}`,
+  );
+
+  // 21. DAEMON-NO-WRITE: daemon.ts contains no git-mutating verbs (grep empty).
+  let daemonSrc = "";
+  try {
+    daemonSrc = readFileSync(DAEMON, "utf8");
+  } catch {
+    daemonSrc = "";
+  }
+  const badVerbs = ["worktree add", "worktree move", "worktree remove", "git commit", "branch -D"];
+  const hits: string[] = [];
+  for (const v of badVerbs) {
+    if (daemonSrc.includes(v)) hits.push(v);
+  }
+  rec(
+    "DAEMON-NO-WRITE",
+    daemonSrc !== "" && hits.length === 0,
+    hits.length === 0 ? 0 : 1,
+    hits.length === 0 ? "grep daemon.ts for worktree add|move|remove|git commit|branch -D: empty" : `forbidden verbs present: ${hits.join(",")}`,
+  );
+
+  // 22-25. COMMIT-CONE on a /tmp throwaway: init, local identity, cone-only
+  // commit e=0 sha printed; outside/secret/shell refuses e=2. Cleanup rm -rf.
+  const coneDir = mkdtempSync(join(tmpdir(), "jgm-st-cone-"));
+  let coneLegit = false;
+  let coneSha = "";
+  let coneOnly = false;
+  let coneLegitExit = -1;
+  let coneOutsideExit = -1;
+  let coneOutsideTok = false;
+  let coneSecretExit = -1;
+  let coneSecretTok = false;
+  let coneShellExit = -1;
+  let coneShellTok = false;
+  try {
+    const gi = (a: string[]): { code: number; out: string; err: string } => {
+      const r = Bun.spawnSync(["git", ...a], { stdout: "pipe", stderr: "pipe", cwd: coneDir });
+      return { code: typeof r.exitCode === "number" ? r.exitCode : -1, out: bufText(r.stdout), err: bufText(r.stderr) };
+    };
+    gi(["init", "-q"]);
+    gi(["config", "user.email", "jgm-st@example.com"]);
+    gi(["config", "user.name", "jgm-st"]);
+    // A tracked baseline file OUTSIDE the cone proves cone-only staging.
+    writeFileSync(join(coneDir, "keep-out.txt"), "baseline-outside-cone\n");
+    gi(["add", "--", "keep-out.txt"]);
+    gi(["commit", "-q", "-m", "baseline"]);
+    writeFileSync(join(coneDir, "keep-out.txt"), "baseline-outside-cone\nDIRTY\n");
+    writeFileSync(join(coneDir, "cone-file.txt"), "hello-cone\n");
+    const cl = spawnBin("bun", [CONE, "--cwd", coneDir, "--paths", "cone-file.txt", "--message", "st cone legit"]);
+    coneLegitExit = cl.code;
+    const cj = tryJson(cl.out) as ConeOut | null;
+    coneSha = cj !== null && typeof cj.sha === "string" ? cj.sha : "";
+    coneLegit = cl.code === 0 && cj !== null && coneSha.length >= 7;
+    const ls = gi(["ls-files", "-m"]);
+    // Cone file committed (no longer modified), baseline file still dirty.
+    const show = gi(["show", "HEAD", "--name-only", "--format="]);
+    const names = show.out.split("\n").map((s) => s.trim()).filter((s) => s.length > 0);
+    coneOnly = coneLegit && names.length === 1 && names[0] === "cone-file.txt" && ls.out.includes("keep-out.txt") && !ls.out.includes("cone-file.txt");
+    const co = spawnBin("bun", [CONE, "--cwd", coneDir, "--paths", "/etc/hostname", "--message", "st cone outside"]);
+    coneOutsideExit = co.code;
+    coneOutsideTok = co.err.includes("UNOWNED-PATH");
+    writeFileSync(join(coneDir, "secret-file.txt"), "hello\napi_key = ABCD1234\n");
+    const cs = spawnBin("bun", [CONE, "--cwd", coneDir, "--paths", "secret-file.txt", "--message", "st cone secret"]);
+    coneSecretExit = cs.code;
+    coneSecretTok = cs.err.includes("SECRET-HIT");
+    const ch = spawnBin("bun", [CONE, "--cwd", SHELL, "--paths", "dummy.txt", "--message", "st cone shell"]);
+    coneShellExit = ch.code;
+    coneShellTok = ch.err.includes("PUFFER-PARENT");
+  } finally {
+    try {
+      rmSync(coneDir, { recursive: true, force: true });
+    } catch {
+      // best-effort cleanup of the throwaway probe
+    }
+  }
+  rec(
+    "COMMIT-CONE-LEGIT",
+    coneLegit && coneOnly,
+    coneLegitExit,
+    `e=${coneLegitExit} sha=${coneSha.slice(0, 12)} coneOnly=${coneOnly} dir=/tmp-throwaway(rm)`,
+  );
+  rec(
+    "COMMIT-CONE-OUTSIDE",
+    coneOutsideExit === 2 && coneOutsideTok,
+    coneOutsideExit,
+    `e=${coneOutsideExit} token=UNOWNED-PATH present=${coneOutsideTok}`,
+  );
+  rec(
+    "COMMIT-CONE-SECRET",
+    coneSecretExit === 2 && coneSecretTok,
+    coneSecretExit,
+    `e=${coneSecretExit} token=SECRET-HIT present=${coneSecretTok}`,
+  );
+  rec(
+    "COMMIT-CONE-SHELL",
+    coneShellExit === 2 && coneShellTok,
+    coneShellExit,
+    `e=${coneShellExit} token=PUFFER-PARENT present=${coneShellTok}`,
+  );
+
+  // 26. SPAWN-LIVE-DRY: spawn-worker from the PRODUCT cwd stays dry e=0.
+  // No live-spawn here: W3 already proved --live on a /tmp throwaway.
+  const sl = spawnSelf(["spawn-worker", "--cwd", PLUTUS_AGENT, "--product", "plutus"]);
+  const slj = tryJson(sl.out) as SpawnOut | null;
+  rec(
+    "SPAWN-LIVE-DRY",
+    sl.code === 0 && slj !== null && slj.dry === true && slj.mutate === false,
+    sl.code,
+    `e=${sl.code} dry=${slj !== null ? String(slj.dry) : "?"} mutate=${slj !== null ? String(slj.mutate) : "?"} cwd=PLUTUS/agent(product)`,
   );
 
   const pass = rows.filter((r) => r.status === "PASS").length;
