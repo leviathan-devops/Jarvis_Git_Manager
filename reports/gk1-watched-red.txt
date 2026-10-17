@@ -1,0 +1,28 @@
+Watched-red-first transcript
+Command: JGM_ARCHIVE_PLANTED_BUG=1 bun test --test-name-pattern '^a leftover gets archived$' ./test/archive-leftover.test.ts
+Planted bug: archive-leftover classifies the leftover and leaves it in place (pre-fix no-op).
+Exit: 1
+
+bun test v1.4.3 (c6da4a4d3)
+
+test/archive-leftover.test.ts:
+120 |     repo: fx.repo,
+121 |     archiveDir: fx.archive,
+122 |     apply: true,
+123 |   });
+124 | 
+125 |   expect(report.mutated).toBe(true);
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/workspace/test/archive-leftover.test.ts:125:26)
+(fail) a leftover gets archived [25.09ms]
+
+ 0 pass
+ 4 filtered out
+ 1 fail
+ 1 expect() calls
+Ran 1 test across 1 file. [35.00ms]

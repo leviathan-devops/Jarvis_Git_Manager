@@ -1,0 +1,17 @@
+Green transcript after the planted no-op failed
+Command: bun test ./test/archive-leftover.test.ts
+Exit: 0
+
+bun test v1.4.3 (c6da4a4d3)
+
+test/archive-leftover.test.ts:
+(pass) a leftover gets archived [36.53ms]
+(pass) an active or dirty worktree is never touched [45.94ms]
+(pass) dry-run changes nothing [47.61ms]
+(pass) an archive interrupted part-way is recoverable [40.50ms]
+(pass) a delete verb is refused and nothing is archived [30.20ms]
+
+ 5 pass
+ 0 fail
+ 63 expect() calls
+Ran 5 tests across 1 file. [211.00ms]
