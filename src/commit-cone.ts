@@ -68,12 +68,37 @@ function underLive(root: string, p: string): boolean {
 }
 
 // Throwaway probe roots: the only non-keep-live toplevels commit-cone ever
-// writes in. Covers the /tmp proof repos and ST sandboxes.
+// writes in. Hardcoded /tmp and /var/tmp only. TMPDIR / os.tmpdir() is
+// caller-controlled and is not an exemption. Compare canonical paths so a
+// symlink cannot escape. A missing toplevel or probe root (ENOENT/ENOTDIR)
+// does not grant probe ownership. Every other filesystem error propagates.
+class ProbeFs {
+  static isAbsent(err: unknown): boolean {
+    if (typeof err !== "object" || err === null || !("code" in err)) return false;
+    const code = (err as { code?: unknown }).code;
+    return code === "ENOENT" || code === "ENOTDIR";
+  }
+}
+
 function isProbeRoot(tl: string): boolean {
   const roots: string[] = ["/tmp", "/var/tmp"];
-  const td = process.env.TMPDIR;
-  if (td !== undefined && td.startsWith("/")) roots.push(stripSlash(td));
-  return roots.some((r) => tl === r || tl.startsWith(r + "/"));
+  let realTl: string;
+  try {
+    realTl = stripSlash(realpathSync(tl));
+  } catch (err) {
+    if (!ProbeFs.isAbsent(err)) throw err;
+    return false;
+  }
+  return roots.some((r) => {
+    let root: string;
+    try {
+      root = stripSlash(realpathSync(r));
+    } catch (err) {
+      if (!ProbeFs.isAbsent(err)) throw err;
+      return false;
+    }
+    return realTl === root || realTl.startsWith(root + "/");
+  });
 }
 
 // Secret patterns, built from fragments so this file's own source never
